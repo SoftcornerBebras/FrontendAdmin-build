@@ -807,7 +807,7 @@ class CustomizePPT(APIView):                      #Get functions related to ppt 
 
     def saveppt(self,f):
         ppt= Presentation(f)
-        ppt.save(os.path.join(settings.MEDIA_ROOT) +'\ppt\\'+ f.name)
+        ppt.save(os.path.join(settings.MEDIA_ROOT) +'/ppt//'+ f.name)
 
     parser_classes = (FileUploadParser,)
     def post(self,request):
@@ -817,7 +817,6 @@ class CustomizePPT(APIView):                      #Get functions related to ppt 
         return Response(status=200)
 
     def ppt(self,f,data,school,type,duplicate):
-        print(f)
         text_runs = []
         def duplicate_slide(pres,prs,index):
             template = prs.slides[index]
@@ -915,11 +914,11 @@ class CustomizePPT(APIView):                      #Get functions related to ppt 
                 p=school+'-Class-'+data[0]['class']+'-'+data[0]['group']+'-'+data[0]['year']
                 fantasy_zip = zipfile.ZipFile(os.path.join(settings.MEDIA_ROOT) + ("/output/") +school+'-Class-'+data[0]['class']+'-'+data[0]['year']+ '.zip', 'w')
             elif(type=='schoolToppers'):
-                path=os.path.join(settings.MEDIA_ROOT) + '\output\\' +data[i]['Name']+'-'+data[i]['loginID']+'-'+ school + '-Toppers-' + data[0][ 'group'] + '-' + data[0]['year'] + '.pptx'
+                path=os.path.join(settings.MEDIA_ROOT) + '/output//' +data[i]['Name']+'-'+data[i]['loginID']+'-'+ school + '-Toppers-' + data[0][ 'group'] + '-' + data[0]['year'] + '.pptx'
                 fantasy_zip = zipfile.ZipFile(os.path.join(settings.MEDIA_ROOT) + ("/output/") + school +'-Toppers-' + data[0][ 'group'] + '-' + data[0]['year'] + '.zip', 'w')
                 p=school + '-Toppers-' + data[0][ 'group'] + '-' + data[0]['year']
             elif (type == 'nationalToppers'):
-                path = os.path.join(settings.MEDIA_ROOT) + '\output\\' + data[i]['Name']+'-'+data[i]['loginID']+'-'+ 'National Toppers-' + data[0]['group'] + '-' + data[0]['year'] + '.pptx'
+                path = os.path.join(settings.MEDIA_ROOT) + '/output//' + data[i]['Name']+'-'+data[i]['loginID']+'-'+ 'National Toppers-' + data[0]['group'] + '-' + data[0]['year'] + '.pptx'
                 fantasy_zip = zipfile.ZipFile(os.path.join(settings.MEDIA_ROOT) + ("/output/") + 'National Toppers-' + data[0]['group'] + '-' + data[0]['year'] + '.zip', 'w')
                 p='National Toppers-' + data[0]['group'] + '-' + data[0]['year']
             prs.save(path)
@@ -981,9 +980,9 @@ class deleteFiles(APIView):                       #Delete zip created API
         if(type=='schoolToppers'):
             School = school.objects.filter(schoolID=id)
             sch = SchoolSerializers(School, many=True)
-            os.remove(os.path.join(settings.MEDIA_ROOT) + '\output\\' + sch.data[0]['schoolName'] + ', ' +sch.data[0]['addressID']['city'] + '-Toppers-' +  group + '-' + year + '.zip')
+            os.remove(os.path.join(settings.MEDIA_ROOT) + '/output//' + sch.data[0]['schoolName'] + ', ' +sch.data[0]['addressID']['city'] + '-Toppers-' +  group + '-' + year + '.zip')
         if(type=='nationalToppers'):
-            os.remove(os.path.join(settings.MEDIA_ROOT) + '\output\\' + 'National Toppers-' + group + '-' + year + '.zip')
+            os.remove(os.path.join(settings.MEDIA_ROOT) + '/output//' + 'National Toppers-' + group + '-' + year + '.zip')
         return Response(status=200)
 
 class GetParticipationCertificates(APIView):                  #Get Participation Certificate API
@@ -994,14 +993,12 @@ class GetParticipationCertificates(APIView):                  #Get Participation
         c = CustomizePPT()
         g=GetSchoolClassStudents()
         t=GetLatestTemplate()
-        print(t)
         d=g.get(request,cmpID=kwargs['cmpID'],schoolClassID=kwargs['schoolClassID'])
         if len(d.data)>0:
             cl=GetClassWiseAgeGroup()
             agegrpid=cl.get(request,cmpID=kwargs['cmpID'], Class=d.data[0]['schoolClassID']['classNumber'])
             data=[]
             template=t.get(request,type='Participation')
-            print(template.data)
             for i in range(0,len(d.data)):
                 for j in range(0,len(agegrpid.data)):
                     if d.data[i]['competitionAgeID']['AgeGroupClassID']['AgeGroupID']['AgeGroupID']== agegrpid.data[j]['AgeGroupID']:
@@ -1016,8 +1013,6 @@ class GetParticipationCertificates(APIView):                  #Get Participation
                              'class':str(d.data[i]['schoolClassID']['classNumber'])})
             school=d.data[0]['schoolClassID']['schoolID']['schoolName']+', '+d.data[0]['schoolClassID']['schoolID']['addressID']['city']
             type='participation'
-            print(os.path.join(settings.MEDIA_ROOT))
-            print(os.path.join(settings.MEDIA_ROOT) + '/ppt//'+template.data)
             c.ppt(os.path.join(settings.MEDIA_ROOT) + '/ppt//'+template.data, data, school,type,duplicate=False)
             return Response(status=200)
         else:
@@ -1052,7 +1047,7 @@ class GetSchoolToppers(APIView):                     #Get School Toppers Cerific
                     data = sorted(data, key=lambda k: (-k['score'], k['time']))
                     school = d.data[0]['schoolClassID']['schoolID']['schoolName'] + ', ' + d.data[0]['schoolClassID']['schoolID']['addressID']['city']
                     type='schoolToppers'
-                    c.ppt(os.path.join(settings.MEDIA_ROOT) + '\ppt\\'+template.data, data, school,type,duplicate=False)
+                    c.ppt(os.path.join(settings.MEDIA_ROOT) + '/ppt//'+template.data, data, school,type,duplicate=False)
                     return Response(status=200)
                 else:
                     return Response(status=204)
@@ -1270,7 +1265,7 @@ class GetNationalToppers(APIView):                     #Get National Toppers Cer
             data = sorted(data, key=itemgetter('score', 'time'))
             data = sorted(data, key=lambda k: (-k['score'], k['time']))
             type='nationalToppers'
-            c.ppt(os.path.join(settings.MEDIA_ROOT) + '\ppt\\'+template.data, data, None,type,duplicate=False)
+            c.ppt(os.path.join(settings.MEDIA_ROOT) + '/ppt//'+template.data, data, None,type,duplicate=False)
             return Response(status=200)
         else:
          return Response(status=204)
