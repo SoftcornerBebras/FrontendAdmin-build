@@ -23,7 +23,7 @@ import os
 from os import walk
 import glob
 #import win32com.client
-import pythoncom
+#import pythoncom
 from django.conf import settings
 from pptx import Presentation
 from datetime import datetime
@@ -817,6 +817,7 @@ class CustomizePPT(APIView):                      #Get functions related to ppt 
         return Response(status=200)
 
     def ppt(self,f,data,school,type,duplicate):
+        print(f)
         text_runs = []
         def duplicate_slide(pres,prs,index):
             template = prs.slides[index]
@@ -910,7 +911,7 @@ class CustomizePPT(APIView):                      #Get functions related to ppt 
             path = ''
             p=''
             if(type=='participation'):
-                path=os.path.join(settings.MEDIA_ROOT) + '\output\\'+data[i]['Name']+'-'+data[i]['loginID']+'-'+school+'-Class-'+data[0]['class']+'-'+data[0]['group']+'-'+data[0]['year']+'.pptx'
+                path=os.path.join(settings.MEDIA_ROOT) + '/output//'+data[i]['Name']+'-'+data[i]['loginID']+'-'+school+'-Class-'+data[0]['class']+'-'+data[0]['group']+'-'+data[0]['year']+'.pptx'
                 p=school+'-Class-'+data[0]['class']+'-'+data[0]['group']+'-'+data[0]['year']
                 fantasy_zip = zipfile.ZipFile(os.path.join(settings.MEDIA_ROOT) + ("/output/") +school+'-Class-'+data[0]['class']+'-'+data[0]['year']+ '.zip', 'w')
             elif(type=='schoolToppers'):
@@ -922,15 +923,15 @@ class CustomizePPT(APIView):                      #Get functions related to ppt 
                 fantasy_zip = zipfile.ZipFile(os.path.join(settings.MEDIA_ROOT) + ("/output/") + 'National Toppers-' + data[0]['group'] + '-' + data[0]['year'] + '.zip', 'w')
                 p='National Toppers-' + data[0]['group'] + '-' + data[0]['year']
             prs.save(path)
-            pythoncom.CoInitialize()
-			
-			files=glob.glob(path)
+#            pythoncom.CoInitialize()
+
+            files=glob.glob(path)
 
             for filename in files:
                 command = "unoconv -f pdf '" + filename+"'"
                 os.system(command)
                 os.remove(path)
-				
+
 #             def convert(files, formatType=32):
 #                 for filename in files:
 #                     try :
@@ -976,7 +977,7 @@ class deleteFiles(APIView):                       #Delete zip created API
         if(type=='participation'):
             School = school.objects.filter(schoolID=id)
             sch = SchoolSerializers(School, many=True)
-            os.remove(os.path.join(settings.MEDIA_ROOT) + '\output\\'+sch.data[0]['schoolName']+', '+sch.data[0]['addressID']['city']+'-Class-'+str(Class)+'-'+ year + '.zip')
+            os.remove(os.path.join(settings.MEDIA_ROOT) + '/output//'+sch.data[0]['schoolName']+', '+sch.data[0]['addressID']['city']+'-Class-'+str(Class)+'-'+ year + '.zip')
         if(type=='schoolToppers'):
             School = school.objects.filter(schoolID=id)
             sch = SchoolSerializers(School, many=True)
@@ -993,12 +994,14 @@ class GetParticipationCertificates(APIView):                  #Get Participation
         c = CustomizePPT()
         g=GetSchoolClassStudents()
         t=GetLatestTemplate()
+        print(t)
         d=g.get(request,cmpID=kwargs['cmpID'],schoolClassID=kwargs['schoolClassID'])
         if len(d.data)>0:
             cl=GetClassWiseAgeGroup()
             agegrpid=cl.get(request,cmpID=kwargs['cmpID'], Class=d.data[0]['schoolClassID']['classNumber'])
             data=[]
             template=t.get(request,type='Participation')
+            print(template.data)
             for i in range(0,len(d.data)):
                 for j in range(0,len(agegrpid.data)):
                     if d.data[i]['competitionAgeID']['AgeGroupClassID']['AgeGroupID']['AgeGroupID']== agegrpid.data[j]['AgeGroupID']:
@@ -1013,7 +1016,9 @@ class GetParticipationCertificates(APIView):                  #Get Participation
                              'class':str(d.data[i]['schoolClassID']['classNumber'])})
             school=d.data[0]['schoolClassID']['schoolID']['schoolName']+', '+d.data[0]['schoolClassID']['schoolID']['addressID']['city']
             type='participation'
-            c.ppt(os.path.join(settings.MEDIA_ROOT) + '\ppt\\'+template.data, data, school,type,duplicate=False)
+            print(os.path.join(settings.MEDIA_ROOT))
+            print(os.path.join(settings.MEDIA_ROOT) + '/ppt//'+template.data)
+            c.ppt(os.path.join(settings.MEDIA_ROOT) + '/ppt//'+template.data, data, school,type,duplicate=False)
             return Response(status=200)
         else:
             return Response(status=204)
