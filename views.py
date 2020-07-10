@@ -927,7 +927,8 @@ class CustomizePPT(APIView):                      #Get functions related to ppt 
             files=glob.glob(path)
 
             for filename in files:
-                command = "unoconv -f pdf '" + filename+"'"
+                command="libreoffice --headless --invisible --convert-to pdf '" + filename +"'"
+                #command = "unoconv -f pdf '" + filename+"'"
                 os.system(command)
                 os.remove(path)
 
